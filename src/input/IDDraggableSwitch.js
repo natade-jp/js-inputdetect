@@ -1,0 +1,198 @@
+﻿/**
+ * IDDraggableSwitch.js
+ *
+ * @module InputDetect
+ * @author natade (https://github.com/natade-jp)
+ * @license MIT
+ */
+
+import IDSwitch from "./IDSwitch.js";
+import IDPosition from "./IDPosition.js";
+
+/**
+ * ドラッグ可能なスイッチ（ボタン）の状態を管理するクラスです。
+ * クリックやドラッグ操作の開始・終了・移動を追跡し、イベントごとに内部状態を更新できます。
+ */
+export default class IDDraggableSwitch {
+	/**
+	 * ドラッグ操作可能なスイッチの状態を管理するクラス
+	 * @param {number} mask - 対象となるボタン（0:左, 1:中央, 2:右）
+	 * @constructor
+	 */
+	constructor(mask) {
+		this._initIDDraggableSwitch(mask);
+	}
+
+	/**
+	 * 各プロパティを初期化します。
+	 * @param {number} mask - 対象ボタン番号
+	 * @private
+	 */
+	_initIDDraggableSwitch(mask) {
+		/**
+		 * このインスタンスが監視するボタン種別（0:左, 1:中央, 2:右）
+		 * @type {number}
+		 */
+		this.mask = mask;
+
+		/**
+		 * ボタンの押下状態を管理するIDSwitchインスタンス
+		 * @type {IDSwitch}
+		 */
+		this.switch = new IDSwitch();
+
+		/**
+		 * 現在の位置（client座標系）
+		 * @type {IDPosition}
+		 */
+		this.client = new IDPosition();
+
+		/**
+		 * ドラッグ開始位置
+		 * @type {IDPosition}
+		 */
+		this.deltaBase = new IDPosition();
+
+		/**
+		 * ドラッグ量（始点からの移動量）
+		 * @type {IDPosition}
+		 */
+		this.dragged = new IDPosition();
+	}
+
+	/**
+	 * このインスタンスの複製を作成します。
+	 * @returns {IDDraggableSwitch} 複製したIDDraggableSwitchインスタンス
+	 */
+	clone() {
+		const ret = new IDDraggableSwitch(this.mask);
+		ret.switch = this.switch.clone();
+		ret.client = this.client.clone();
+		ret.deltaBase = this.deltaBase.clone();
+		ret.dragged = this.dragged.clone();
+		return ret;
+	}
+
+	/**
+	 * DOMイベントの位置情報から、ノードサイズに応じた正規化座標を計算します。
+	 * 画像やcanvasのスケーリングに対応した正しい座標を返します。
+	 * @param {MouseEvent|TouchEvent} event - イベントオブジェクト
+	 * @returns {IDPosition} 計算済みの位置情報
+	 */
+	correctionForDOM(event) {
+		// イベントが発生したノードの取得
+		let node = event.target;
+		if (!node) {
+			// IE?
+			node = event.currentTarget;
+		}
+		let clientX = 0;
+		let clientY = 0;
+		if ("clientX" in event && "clientY" in event) {
+			clientX = event.clientX;
+			clientY = event.clientY;
+		} else if ("touches" in event && event.touches.length > 0) {
+			clientX = event.touches[0].clientX;
+			clientY = event.touches[0].clientY;
+		}
+		if (node === undefined) {
+			return new IDPosition(clientX, clientY);
+		} else {
+			// ノードのサイズが変更されていることを考慮する
+			// width / height が内部のサイズ
+			// clientWidth / clientHeight が表示上のサイズ
+			const element = /** @type {HTMLElement} */ (node);
+			// Try to cast node to HTMLImageElement or HTMLCanvasElement to access width/height
+			let width = element.clientWidth;
+			let height = element.clientHeight;
+			if ("width" in node && typeof node.width === "number") {
+				width = node.width;
+			}
+			if ("height" in node && typeof node.height === "number") {
+				height = node.height;
+			}
+			return new IDPosition((clientX / element.clientWidth) * width, (clientY / element.clientHeight) * height);
+		}
+	}
+
+	/**
+	 * 指定イベントの座標位置で、全ての位置情報を強制的にセットします。
+	 * @param {MouseEvent|TouchEvent} event - イベントオブジェクト
+	 */
+	setPosition(event) {
+		const position = this.correctionForDOM(event);
+		this.client.set(position);
+		this.deltaBase.set(position);
+		this.dragged._initIDPosition();
+	}
+
+	/**
+	 * マウスボタンが押された時の処理。
+	 * 指定ボタン（mask）が押された時のみ内部状態を更新します。
+	 * @param {MouseEvent} event - マウスイベント
+	 */
+	mousePressed(event) {
+		const position = this.correctionForDOM(event);
+		const state = event.button;
+		if (state === this.mask) {
+			if (!this.switch.ispressed) {
+				this.dragged._initIDPosition();
+			}
+			this.switch.keyPressed();
+			this.client.set(position);
+			this.deltaBase.set(position);
+		}
+	}
+
+	/**
+	 * マウスボタンが離された時の処理。
+	 * @param {MouseEvent} event - マウスイベント
+	 */
+	mouseReleased(event) {
+		const state = event.button;
+		if (state === this.mask) {
+			if (this.switch.ispressed) {
+				this.switch.keyReleased();
+			}
+		}
+	}
+
+	/**
+	 * マウス移動時の処理。
+	 * ドラッグ中なら移動量（dragged）を加算していきます。
+	 * @param {MouseEvent} event - マウスイベント
+	 */
+	mouseMoved(event) {
+		const position = this.correctionForDOM(event);
+		if (this.switch.ispressed) {
+			const delta = new IDPosition(position);
+			delta.sub(this.deltaBase);
+			this.dragged.add(delta);
+		}
+		this.client.set(position.x, position.y);
+		this.deltaBase.set(position.x, position.y);
+	}
+
+	/**
+	 * フォーカスが外れた場合の状態リセット処理。
+	 */
+	focusLost() {
+		this.switch.focusLost();
+	}
+
+	/**
+	 * 他のIDDraggableSwitchインスタンスに現在の入力情報をコピーします。
+	 * ドラッグ量はリセットされます。
+	 * @param {IDDraggableSwitch} c - 情報を受け取るインスタンス
+	 * @throws {string} cがIDDraggableSwitchでない場合
+	 */
+	pickInput(c) {
+		if (!(c instanceof IDDraggableSwitch)) {
+			throw "IllegalArgumentException";
+		}
+		this.switch.pickInput(c.switch);
+		c.client.set(this.client);
+		c.dragged.set(this.dragged);
+		this.dragged._initIDPosition();
+	}
+}

@@ -1,0 +1,60 @@
+{
+	"name": "inputdetect",
+	"version": "0.0.1",
+	"description": "A JavaScript library for unified mouse and touch input detection, supporting drag, multi-touch, and switch-like button interactions. Provides consistent event handling for web applications.",
+	"keywords": [
+		"input",
+		"mouse",
+		"touch",
+		"drag",
+		"web",
+		"library"
+	],
+	"author": "natade-jp <natade3@gmail.com> (https://github.com/natade-jp)",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/natade-jp/js-inputdetect.git"
+	},
+	"license": "MIT",
+	"source": "./src/index.js",
+	"main": "./build/esm/index.js",
+	"types": "./build/type/index.d.ts",
+	"exports": {
+		".": {
+			"browser": "./build/umd/index.js",
+			"umd": "./build/umd/index.js",
+			"import": "./build/esm/index.js",
+			"require": "./build/cjs/index.js"
+		}
+	},
+	"type": "module",
+	"scripts": {
+		"build": "node ./scripts/package.build.js",
+		"test": "jest",
+		"test_target": "node ./scripts/package.test.js",
+		"doc": "node ./scripts/package.doc.js",
+		"type": "node ./scripts/package.type.js"
+	},
+	"directories": {
+		"src": "./src",
+		"build": "./build"
+	},
+	"bugs": {
+		"url": "https://github.com/natade-jp/js-inputdetect/issues"
+	},
+	"homepage": "https://github.com/natade-jp/js-inputdetect",
+	"devDependencies": {
+		"@rollup/plugin-commonjs": "^28.0.3",
+		"@rollup/plugin-node-resolve": "^16.0.1",
+		"@rollup/plugin-terser": "^0.4.4",
+		"docdash": "^2.0.2",
+		"eslint": "^9.27.0",
+		"eslint-config-prettier": "^10.1.5",
+		"jsdoc": "^4.0.4",
+		"jsdoc-export-default-interop": "^0.3.1",
+		"ntfile": "^1.0.0",
+		"prettier": "^3.5.3",
+		"rollup": "^4.40.2",
+		"typescript": "^5.8.3"
+	}
+}

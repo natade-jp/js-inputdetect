@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>Tutorial: getting-started - InputDetect</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <script src="scripts/commonNav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">Tutorial: getting-started</h1>
+    
+
+    <section>
+
+<header>
+    
+
+    <h2>getting-started</h2>
+</header>
+
+<article>
+    <h2>チュートリアル</h2>
+<p><code>InputDetect</code> を使ってGUIを作成する方法を実際に動作するデモを使用して説明します。</p>
+<h3>実動作</h3>
+<p>PC画面とスマホ画面の実動作を確認できます。
+クリックした結果は <code>console.log</code> で出力しています。検証で表示しながら、GUIを操作してみてください。</p>
+<iframe src="./demo/" width="640" height="480" style="border: 1px solid #ccc; border-radius: 8px;"></iframe>
+<h3>解説</h3>
+<ol>
+<li>画面内（640x480の黒いキャンバス）でタッチやマウス操作をすると、入力の座標やボタン状態がログ出力され、押された場所に色付き円が描画されます。</li>
+<li>左クリック/タッチ1本、右クリック/タッチ2本、中央クリック/タッチ3本で色が変化します。</li>
+<li>Device.Touch, Device.Mouse を使うことで、同様の方法で様々な入力を取得できます。</li>
+</ol>
+<ul>
+<li><code>index.html</code></li>
+</ul>
+<pre class="prettyprint source lang-html"><code>&lt;!DOCTYPE html>
+&lt;html>
+	&lt;head>
+		&lt;title>InputDetect demo&lt;/title>
+		&lt;meta charset=&quot;utf-8&quot;>
+		&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1.0,user-scalable=no&quot; />
+		&lt;script type=&quot;module&quot; src=&quot;./main.mjs&quot; charset=&quot;utf-8&quot;>&lt;/script>
+		&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;./libs/GuiBlocks.css&quot;>
+		&lt;style type=&quot;text/css&quot;>
+		#scomponent {
+			display:			block;
+			width:				100%;
+			background-color:	#FFFFFF;
+			margin:				0px;
+			padding:			0em;
+		}
+		&lt;/style>
+	&lt;/head>
+	&lt;body>
+		&lt;div id=&quot;scomponent&quot;>&lt;/div>
+	&lt;/body>
+&lt;/html>
+</code></pre>
+<ul>
+<li><code>main.mjs</code></li>
+</ul>
+<pre class="prettyprint source lang-js"><code>import InputDetect from &quot;./libs/InputDetect.min.js&quot;;
+import NTColor from &quot;./libs/NTColor.min.js&quot;;
+import GuiBlocks from &quot;./libs/GuiBlocks.min.js&quot;;
+
+const Device = InputDetect;
+
+/**
+ * InputDevice（マウスやタッチ）の利用サンプル
+ * 
+ * このスクリプトは、タッチやマウスのイベントを取得して、
+ * その座標やボタン状態をログに表示し、押された箇所に円を描画します。
+ */
+const main = function() {
+	
+	// サンプルのタイトルをコンソールに表示
+	console.log(&quot;InputDetect サンプル&quot;);
+	
+	// 画面の縦スクロールを禁止（スマホなどで操作しやすくする）
+	Device.IDTools.noScroll();
+	
+	// GuiBlocks の Canvas コンポーネントを作成してDOMに挿入
+	const scanvas = new GuiBlocks.SCanvas();
+	scanvas.putMe(&quot;scomponent&quot;, GuiBlocks.PUT_TYPE.IN);
+	scanvas.setUnit(GuiBlocks.UNIT_TYPE.PX);
+	scanvas.setPixelSize(640, 480);
+	scanvas.setSize(640, 480);
+	const canvas = scanvas.getCanvas();
+	
+	// 背景色を黒に
+	canvas.style.backgroundColor = &quot;black&quot;;
+
+	// 描画用の2Dコンテキスト取得
+	const ctx = scanvas.getContext();
+	
+	// タッチ・マウス入力を取得するデバイスオブジェクト生成
+	const mouse = new Device.IDTouch();
+
+	// Canvasエレメントにイベントリスナーを登録（タッチ・マウス両対応）
+	mouse.setListenerOnElement(scanvas.element);
+	let times = 0;
+	
+	/**
+	 * 入力情報を取得して、ログと描画を行う関数
+	 * 250msごとに自動で呼び出される
+	 */
+	const checkMouse = function() {
+
+		// 最新の入力情報を取得
+		const data = new Device.IDTouch();
+		mouse.pickInput(data);
+
+		// 入力情報をログ出力（座標やボタンの状態、ドラッグ量など）
+		console.log(&quot;time[&quot; + (times++) + &quot;]&quot;);
+		console.log(&quot;position      &quot;		+ data.position.x + &quot;,&quot; + data.position.y);
+		console.log(&quot;wheelrotation &quot;		+ data.wheelrotation);
+		console.log(&quot;draggedL       &quot;	+ data.left.dragged.x	+ &quot;,&quot; + data.left.dragged.y);
+		console.log(&quot;draggedR       &quot;	+ data.right.dragged.x	+ &quot;,&quot; + data.right.dragged.y);
+		console.log(&quot;ispressed  &quot;		+ data.left.switch.ispressed	+ &quot;,&quot; + data.right.switch.ispressed		+ &quot;,&quot; + data.center.switch.ispressed);
+		console.log(&quot;isreleased &quot;		+ data.left.switch.isreleased	+ &quot;,&quot; + data.right.switch.isreleased	+ &quot;,&quot; + data.center.switch.isreleased);
+		console.log(&quot;istyped    &quot;		+ data.left.switch.istyped		+ &quot;,&quot; + data.right.switch.istyped		+ &quot;,&quot; + data.center.switch.istyped);
+		
+		// 円の色は押されたボタンによって変化
+		let color;
+		const ispressed = data.left.switch.ispressed || data.right.switch.ispressed || data.center.switch.ispressed;
+		if(data.left.switch.ispressed) {
+			// 左クリック／タッチ1本
+			color = NTColor.newColorNormalizedHSV(times * 0.1, 1.0, 1.0, 0.8);
+		}
+		else if(data.right.switch.ispressed) {
+			// 右クリック／タッチ2本
+			color = NTColor.newColorNormalizedHSV(times * 0.1, 0.1, 1.0, 0.8);
+		}
+		else if(data.center.switch.ispressed) {
+			// 中央クリック／タッチ3本
+			color = NTColor.newColorNormalizedHSV(times * 0.1, 1.0, 0.1, 0.8);
+		}
+
+		if(ispressed) {
+			// 押されている場所に50pxの円を描画
+			ctx.beginPath();
+			ctx.fillStyle = color.toCSS255();
+			ctx.arc( data.position.x, data.position.y, 50, 0, 2 * Math.PI, true);
+			ctx.fill();
+		}
+	};
+	
+	// 250msごとに入力チェック（実質リアルタイム）
+	setInterval(checkMouse, 250);
+	
+};
+
+// メイン関数を実行
+main();
+</code></pre>
+</article>
+
+</section>
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.4</a> using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+
+<script src="scripts/collapse.js" defer></script>
+
+
+</body>
+</html>

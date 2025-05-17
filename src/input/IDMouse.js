@@ -1,0 +1,234 @@
+﻿/**
+ * IDMouse.js
+ *
+ * @module InputDetect
+ * @author natade (https://github.com/natade-jp)
+ * @license MIT
+ */
+
+import IDDraggableSwitch from "./IDDraggableSwitch.js";
+import IDPosition from "./IDPosition.js";
+
+/**
+ * マウス入力を管理するクラスです。
+ * 左・中央・右クリックの状態やドラッグ・ホイール回転・マウス座標の追跡を行い、複数ボタンの同時押しにも対応しています。
+ */
+export default class IDMouse {
+	/**
+	 * マウスの入力情報を管理するクラス
+	 * 左・中央・右ボタン、位置、ホイールなどをまとめて扱えます。
+	 * @constructor
+	 */
+	constructor() {
+		this._initIDMouse();
+	}
+
+	/**
+	 * 各プロパティを初期化します。
+	 * @private
+	 */
+	_initIDMouse() {
+		/**
+		 * 左ボタンの状態を管理するオブジェクト
+		 * @type {IDDraggableSwitch}
+		 */
+		this.left = new IDDraggableSwitch(IDMouse.MOUSE_EVENTS.BUTTON1_MASK);
+
+		/**
+		 * 中央ボタンの状態を管理するオブジェクト
+		 * @type {IDDraggableSwitch}
+		 */
+		this.center = new IDDraggableSwitch(IDMouse.MOUSE_EVENTS.BUTTON2_MASK);
+
+		/**
+		 * 右ボタンの状態を管理するオブジェクト
+		 * @type {IDDraggableSwitch}
+		 */
+		this.right = new IDDraggableSwitch(IDMouse.MOUSE_EVENTS.BUTTON3_MASK);
+
+		/**
+		 * 現在のマウス座標
+		 * @type {IDPosition}
+		 */
+		this.position = new IDPosition();
+
+		/**
+		 * ホイールの回転量
+		 * @type {number}
+		 */
+		this.wheelrotation = 0;
+	}
+
+	/**
+	 * このインスタンスの複製を作成します。
+	 * @returns {IDMouse} 複製したIDMouseインスタンス
+	 */
+	clone() {
+		const ret = new IDMouse();
+		ret.left = this.left.clone();
+		ret.center = this.center.clone();
+		ret.right = this.right.clone();
+		ret.position = this.position.clone();
+		ret.wheelrotation = this.wheelrotation;
+		return ret;
+	}
+
+	/**
+	 * マウスボタンが押された時の処理を行います。
+	 * それぞれのボタンごとに対応する状態を更新します。
+	 * @param {MouseEvent} mouseevent - マウスイベントまたは同等のオブジェクト
+	 */
+	mousePressed(mouseevent) {
+		this.left.mousePressed(mouseevent);
+		this.center.mousePressed(mouseevent);
+		this.right.mousePressed(mouseevent);
+	}
+
+	/**
+	 * マウスボタンが離された時の処理を行います。
+	 * @param {MouseEvent} mouseevent - マウスイベントまたは同等のオブジェクト
+	 */
+	mouseReleased(mouseevent) {
+		this.left.mouseReleased(mouseevent);
+		this.center.mouseReleased(mouseevent);
+		this.right.mouseReleased(mouseevent);
+	}
+
+	/**
+	 * マウス移動時の処理を行います。
+	 * それぞれのボタンのドラッグ状態や現在位置を更新します。
+	 * @param {MouseEvent} mouseevent - マウスイベントまたは同等のオブジェクト
+	 */
+	mouseMoved(mouseevent) {
+		this.left.mouseMoved(mouseevent);
+		this.center.mouseMoved(mouseevent);
+		this.right.mouseMoved(mouseevent);
+		this.position.x = this.left.client.x;
+		this.position.y = this.left.client.y;
+	}
+
+	/**
+	 * ホイール回転イベントの処理を行います。
+	 * @param {WheelEvent} event - ホイールイベントまたは同等のオブジェクト
+	 */
+	mouseWheelMoved(event) {
+		if (event.deltaY !== 0) {
+			this.wheelrotation += event.deltaY > 0 ? -1 : 1;
+		}
+	}
+
+	/**
+	 * マウスカーソルが要素外に出た場合の処理（状態リセット等）を行います。
+	 */
+	focusLost() {
+		this.left.focusLost();
+		this.center.focusLost();
+		this.right.focusLost();
+	}
+
+	/**
+	 * 他のIDMouseインスタンスへ現在の入力情報をコピーします。
+	 * 各ボタンや位置、ホイール回転量が渡され、渡した後はホイール量がリセットされます。
+	 * @param {IDMouse} c - 情報を受け取るIDMouseインスタンス
+	 * @throws {string} cがIDMouseでない場合
+	 */
+	pickInput(c) {
+		if (!(c instanceof IDMouse)) {
+			throw "IllegalArgumentException";
+		}
+		this.left.pickInput(c.left);
+		this.center.pickInput(c.center);
+		this.right.pickInput(c.right);
+		c.position.set(this.position);
+		c.wheelrotation = this.wheelrotation;
+		this.wheelrotation = 0;
+	}
+
+	/**
+	 * 指定した要素にマウス入力イベントリスナーを登録します。
+	 * これにより、押下・移動・ホイール回転・フォーカスロスト等のイベントをこのクラスで検知できます。
+	 * @param {HTMLElement} element - イベントリスナーを設定するDOM要素
+	 */
+	setListenerOnElement(element) {
+		const that = this;
+		/**
+		 * @param {MouseEvent} e
+		 */
+		const mousePressed = function (e) {
+			that.mousePressed(e);
+		};
+
+		/**
+		 * @param {MouseEvent} e
+		 */
+		const mouseReleased = function (e) {
+			that.mouseReleased(e);
+		};
+
+		/**
+		 * @param {MouseEvent} e
+		 */
+		const mouseMoved = function (e) {
+			that.mouseMoved(e);
+		};
+
+		const focusLost = function () {
+			that.focusLost();
+		};
+
+		/**
+		 * @param {WheelEvent} e
+		 */
+		const mouseWheelMoved = function (e) {
+			that.mouseWheelMoved(e);
+			e.preventDefault();
+		};
+
+		/**
+		 * @param {Event} e
+		 */
+		const contextMenu = function (e) {
+			e.preventDefault();
+		};
+		element.style.cursor = "crosshair";
+		// 非選択化
+		element.style.userSelect = "none";
+		element.style.setProperty("-moz-user-select", "none");
+		element.style.setProperty("-webkit-user-select", "none");
+		element.style.setProperty("-ms-user-select", "none");
+		// メニュー非表示化
+		element.style.setProperty("-webkit-touch-callout", "none");
+		// タップのハイライトカラーを消す
+		element.style.setProperty("-webkit-tap-highlight-color", "rgba(0,0,0,0)");
+
+		element.addEventListener("mousedown", mousePressed, false);
+		element.addEventListener("mouseup", mouseReleased, false);
+		element.addEventListener("mousemove", mouseMoved, false);
+		element.addEventListener("mouseout", focusLost, false);
+		element.addEventListener("wheel", mouseWheelMoved, false);
+		element.addEventListener("contextmenu", contextMenu, false);
+	}
+}
+
+/**
+ * マウスボタン番号の定数
+ * BUTTON1_MASK: 左ボタン, BUTTON2_MASK: 中央ボタン, BUTTON3_MASK: 右ボタン
+ * @enum {number}
+ */
+IDMouse.MOUSE_EVENTS = {
+	/**
+	 * 左ボタン
+	 * @type {number}
+	 */
+	BUTTON1_MASK: 0,
+	/**
+	 * 中央ボタン
+	 * @type {number}
+	 */
+	BUTTON2_MASK: 1,
+	/**
+	 * 右ボタン
+	 * @type {number}
+	 */
+	BUTTON3_MASK: 2
+};
