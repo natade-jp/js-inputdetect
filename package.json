@@ -16,15 +16,15 @@
 		"url": "git+https://github.com/natade-jp/js-inputdetect.git"
 	},
 	"license": "MIT",
-	"source": "./src/index.js",
-	"main": "./build/esm/index.js",
-	"types": "./build/type/index.d.ts",
+	"source": "./src/InputDetect.js",
+	"main": "./build/esm/InputDetect.js",
+	"types": "./build/type/InputDetect.d.ts",
 	"exports": {
 		".": {
-			"browser": "./build/umd/index.js",
-			"umd": "./build/umd/index.js",
-			"import": "./build/esm/index.js",
-			"require": "./build/cjs/index.js"
+			"browser": "./build/umd/InputDetect.js",
+			"umd": "./build/umd/InputDetect.js",
+			"import": "./build/esm/InputDetect.js",
+			"require": "./build/cjs/InputDetect.js"
 		}
 	},
 	"type": "module",
