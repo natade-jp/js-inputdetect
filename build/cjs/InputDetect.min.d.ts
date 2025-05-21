@@ -1,11 +1,257 @@
 export { InputDetect as default };
-declare namespace InputDetect {
-    export { IDDraggableSwitch };
-    export { IDMouse };
-    export { IDPosition };
-    export { IDSwitch };
-    export { IDTouch };
-    export { IDTools };
+/**
+ * InputDetect
+ *
+ * @module InputDetect
+ * @author natade (https://github.com/natade-jp)
+ * @license MIT
+ */
+declare class InputDetect {
+    /**
+     * InputDetect のインスタンスを生成します。
+     * @returns {InputDetect}
+     */
+    static create(): InputDetect;
+    /**
+     * スクロールを禁止します。
+     *
+     * @function
+     * @returns {void}
+     *
+     * @example
+     * // ページの縦スクロールを禁止したいときに実行
+     * IDTools.noScroll();
+     */
+    static noScroll(): void;
+    /**
+     * @type {IDTouch}
+     * @private
+     */
+    private _data;
+    /**
+     * 対象要素にタッチイベントリスナーを設定します。
+     * @param {HTMLElement} element - イベントを監視するDOM要素
+     */
+    setListenerOnElement(element: HTMLElement): void;
+    /**
+     * 現在の入力情報が入ったIDTouchインスタンスを取得します。
+     * 各ボタンや位置、ホイール回転量が渡され、渡した後はホイール量がリセットされます。
+     * @returns {IDTouch} - タッチデータを持つIDTouchインスタンス
+     */
+    pickInput(): IDTouch;
+}
+/**
+ * IDTouch.js
+ *
+ * @module InputDetect
+ * @author natade (https://github.com/natade-jp)
+ * @license MIT
+ */
+/**
+ * タッチデバイス入力を管理するクラスです。
+ * 最大3本指のマルチタッチ操作を検出し、それぞれをマウスの左・右・中央クリックに割り当てて管理できます。
+ * タッチイベントをPCのマウスイベントとして扱う変換処理も含まれています。
+ */
+declare class IDTouch extends IDMouse {
+    /**
+     * 内部の初期化処理を行います。
+     * @private
+     */
+    private _initIDTouch;
+    /**
+     * タッチ数とマウスボタン番号のマッピング
+     * @type {Object<number, number>}
+     */
+    touchcount_to_mask: {
+        [x: number]: number;
+    };
+    /**
+     * @param {MouseEvent} e
+     */
+    _mousePressed: (e: MouseEvent) => void;
+    /**
+     * @param {MouseEvent} e
+     */
+    _mouseReleased: (e: MouseEvent) => void;
+    /**
+     * @param {MouseEvent} e
+     */
+    _mouseMoved: (e: MouseEvent) => void;
+    /**
+     * 2本指の操作中かどうか
+     * @type {boolean}
+     */
+    isdoubletouch: boolean;
+    /**
+     * @type {IDPosition}
+     * @private
+     */
+    private _doubleposition_p1;
+    /**
+     * @type {IDPosition}
+     * @private
+     */
+    private _doubleposition_p2;
+    /**
+     * タッチ開始時、すべての座標情報を初期化します。
+     * @param {MouseEvent|TouchEvent} mouseevent - マウスイベント相当のオブジェクト
+     * @private
+     */
+    private _initPosition;
+    /**
+     * マウスイベントのプロパティを仮想的なマウスイベント
+     * @typedef {Object} VirtualMouseEvent
+     * @property {number} clientX マウスのX座標
+     * @property {number} clientY マウスのY座標
+     * @property {number} button マウスボタンの種類
+     * @property {EventTarget} target イベントのターゲット
+     * @property {number} touchcount タッチ数
+     */
+    /**
+     * タッチイベントを仮想的なマウスイベントへ変換します。
+     * 指の平均座標を計算し、タッチ数から対応するボタンを設定します。
+     * @param {TouchEvent} touchevent - タッチイベント
+     * @returns {MouseEvent} 仮想マウスイベントオブジェクト
+     * @private
+     */
+    private _MultiTouchToMouse;
+    /**
+     * 2本指タッチによるピンチ操作を検出し、ホイール回転に変換します。
+     * @param {TouchEvent} touchevent - タッチイベント
+     * @private
+     */
+    private _MoveMultiTouch;
+    /**
+     * 指定されたボタンに応じて関数を呼び分けます。
+     * @param {MouseEvent} mouseevent - 仮想マウスイベント
+     * @param {Function} funcOn - 対象ボタンで呼ぶ関数
+     * @param {Function} funcOff - それ以外のボタンで呼ぶ関数
+     * @param {number} target - 対象となるボタン番号
+     * @private
+     */
+    private _actFuncMask;
+    /**
+     * タッチ開始イベントを処理します。
+     * @param {TouchEvent} touchevent - タッチイベント
+     * @private
+     */
+    private _touchStart;
+    /**
+     * タッチ終了イベントを処理します。
+     * @param {TouchEvent} touchevent - タッチイベント
+     * @private
+     */
+    private _touchEnd;
+    /**
+     * タッチ移動イベントを処理します。
+     * @param {TouchEvent} touchevent - タッチイベント
+     * @private
+     */
+    private _touchMove;
+}
+/**
+ * IDMouse.js
+ *
+ * @module InputDetect
+ * @author natade (https://github.com/natade-jp)
+ * @license MIT
+ */
+/**
+ * マウス入力を管理するクラスです。
+ * 左・中央・右クリックの状態やドラッグ・ホイール回転・マウス座標の追跡を行い、複数ボタンの同時押しにも対応しています。
+ */
+declare class IDMouse {
+    /**
+     * 各プロパティを初期化します。
+     * @private
+     */
+    private _initIDMouse;
+    /**
+     * 左ボタンの状態を管理するオブジェクト
+     * @type {IDDraggableSwitch}
+     */
+    left: IDDraggableSwitch;
+    /**
+     * 中央ボタンの状態を管理するオブジェクト
+     * @type {IDDraggableSwitch}
+     */
+    center: IDDraggableSwitch;
+    /**
+     * 右ボタンの状態を管理するオブジェクト
+     * @type {IDDraggableSwitch}
+     */
+    right: IDDraggableSwitch;
+    /**
+     * 現在のマウス座標
+     * @type {IDPosition}
+     */
+    position: IDPosition;
+    /**
+     * ホイールの回転量
+     * @type {number}
+     */
+    wheelrotation: number;
+    /**
+     * このインスタンスの複製を作成します。
+     * @returns {IDMouse} 複製したIDMouseインスタンス
+     */
+    clone(): IDMouse;
+    /**
+     * マウスボタンが押された時の処理を行います。
+     * それぞれのボタンごとに対応する状態を更新します。
+     * @param {MouseEvent} mouseevent - マウスイベントまたは同等のオブジェクト
+     * @protected
+     */
+    protected mousePressed(mouseevent: MouseEvent): void;
+    /**
+     * マウスボタンが離された時の処理を行います。
+     * @param {MouseEvent} mouseevent - マウスイベントまたは同等のオブジェクト
+     * @protected
+     */
+    protected mouseReleased(mouseevent: MouseEvent): void;
+    /**
+     * マウス移動時の処理を行います。
+     * それぞれのボタンのドラッグ状態や現在位置を更新します。
+     * @param {MouseEvent} mouseevent - マウスイベントまたは同等のオブジェクト
+     * @protected
+     */
+    protected mouseMoved(mouseevent: MouseEvent): void;
+    /**
+     * ホイール回転イベントの処理を行います。
+     * @param {WheelEvent} event - ホイールイベントまたは同等のオブジェクト
+     * @protected
+     */
+    protected mouseWheelMoved(event: WheelEvent): void;
+    /**
+     * マウスカーソルが要素外に出た場合の処理（状態リセット等）を行います。
+     * @protected
+     */
+    protected focusLost(): void;
+    /**
+     * 他のIDMouseインスタンスへ現在の入力情報をコピーします。
+     * 各ボタンや位置、ホイール回転量が渡され、渡した後はホイール量がリセットされます。
+     * @param {IDMouse} c - 情報を受け取るIDMouseインスタンス
+     * @throws {string} cがIDMouseでない場合
+     */
+    pickInput(c: IDMouse): void;
+    /**
+     * 指定した要素にマウス入力イベントリスナーを登録します。
+     * これにより、押下・移動・ホイール回転・フォーカスロスト等のイベントをこのクラスで検知できます。
+     * @param {HTMLElement} element - イベントリスナーを設定するDOM要素
+     */
+    setListenerOnElement(element: HTMLElement): void;
+}
+declare namespace IDMouse {
+    namespace MOUSE_EVENTS {
+        let BUTTON1_MASK: number;
+        let BUTTON2_MASK: number;
+        let BUTTON3_MASK: number;
+    }
+    /**
+     * マウスボタン番号の定数
+     * BUTTON1_MASK: 左ボタン, BUTTON2_MASK: 中央ボタン, BUTTON3_MASK: 右ボタン
+     */
+    type MOUSE_EVENTS = number;
 }
 /**
  * IDDraggableSwitch.js
@@ -101,105 +347,6 @@ declare class IDDraggableSwitch {
      * @throws {string} cがIDDraggableSwitchでない場合
      */
     pickInput(c: IDDraggableSwitch): void;
-}
-/**
- * IDMouse.js
- *
- * @module InputDetect
- * @author natade (https://github.com/natade-jp)
- * @license MIT
- */
-/**
- * マウス入力を管理するクラスです。
- * 左・中央・右クリックの状態やドラッグ・ホイール回転・マウス座標の追跡を行い、複数ボタンの同時押しにも対応しています。
- */
-declare class IDMouse {
-    /**
-     * 各プロパティを初期化します。
-     * @private
-     */
-    private _initIDMouse;
-    /**
-     * 左ボタンの状態を管理するオブジェクト
-     * @type {IDDraggableSwitch}
-     */
-    left: IDDraggableSwitch;
-    /**
-     * 中央ボタンの状態を管理するオブジェクト
-     * @type {IDDraggableSwitch}
-     */
-    center: IDDraggableSwitch;
-    /**
-     * 右ボタンの状態を管理するオブジェクト
-     * @type {IDDraggableSwitch}
-     */
-    right: IDDraggableSwitch;
-    /**
-     * 現在のマウス座標
-     * @type {IDPosition}
-     */
-    position: IDPosition;
-    /**
-     * ホイールの回転量
-     * @type {number}
-     */
-    wheelrotation: number;
-    /**
-     * このインスタンスの複製を作成します。
-     * @returns {IDMouse} 複製したIDMouseインスタンス
-     */
-    clone(): IDMouse;
-    /**
-     * マウスボタンが押された時の処理を行います。
-     * それぞれのボタンごとに対応する状態を更新します。
-     * @param {MouseEvent} mouseevent - マウスイベントまたは同等のオブジェクト
-     */
-    mousePressed(mouseevent: MouseEvent): void;
-    /**
-     * マウスボタンが離された時の処理を行います。
-     * @param {MouseEvent} mouseevent - マウスイベントまたは同等のオブジェクト
-     */
-    mouseReleased(mouseevent: MouseEvent): void;
-    /**
-     * マウス移動時の処理を行います。
-     * それぞれのボタンのドラッグ状態や現在位置を更新します。
-     * @param {MouseEvent} mouseevent - マウスイベントまたは同等のオブジェクト
-     */
-    mouseMoved(mouseevent: MouseEvent): void;
-    /**
-     * ホイール回転イベントの処理を行います。
-     * @param {WheelEvent} event - ホイールイベントまたは同等のオブジェクト
-     */
-    mouseWheelMoved(event: WheelEvent): void;
-    /**
-     * マウスカーソルが要素外に出た場合の処理（状態リセット等）を行います。
-     */
-    focusLost(): void;
-    /**
-     * 他のIDMouseインスタンスへ現在の入力情報をコピーします。
-     * 各ボタンや位置、ホイール回転量が渡され、渡した後はホイール量がリセットされます。
-     * @param {IDMouse} c - 情報を受け取るIDMouseインスタンス
-     * @throws {string} cがIDMouseでない場合
-     */
-    pickInput(c: IDMouse): void;
-    /**
-     * 指定した要素にマウス入力イベントリスナーを登録します。
-     * これにより、押下・移動・ホイール回転・フォーカスロスト等のイベントをこのクラスで検知できます。
-     * @param {HTMLElement} element - イベントリスナーを設定するDOM要素
-     */
-    setListenerOnElement(element: HTMLElement): void;
-}
-declare namespace IDMouse {
-    namespace MOUSE_EVENTS {
-        let BUTTON1_MASK: number;
-        let BUTTON2_MASK: number;
-        let BUTTON3_MASK: number;
-    }
-    /**
-     * マウスボタン番号の定数
-     * BUTTON1_MASK: 左ボタン, BUTTON2_MASK: 中央ボタン, BUTTON3_MASK: 右ボタン
-     */
-    type MOUSE_EVENTS = number;
 }
 /**
  * IDPosition.js
@@ -330,113 +477,4 @@ declare class IDSwitch {
      * @throws {string} - cがIDSwitchのインスタンスでない場合
      */
     pickInput(c: IDSwitch): void;
-}
-/**
- * IDTouch.js
- *
- * @module InputDetect
- * @author natade (https://github.com/natade-jp)
- * @license MIT
- */
-/**
- * タッチデバイス入力を管理するクラスです。
- * 最大3本指のマルチタッチ操作を検出し、それぞれをマウスの左・右・中央クリックに割り当てて管理できます。
- * タッチイベントをPCのマウスイベントとして扱う変換処理も含まれています。
- */
-declare class IDTouch extends IDMouse {
-    /**
-     * 内部の初期化処理を行います。
-     * @private
-     */
-    private _initIDTouch;
-    /**
-     * タッチ数とマウスボタン番号のマッピング
-     * @type {Object<number, number>}
-     */
-    touchcount_to_mask: {
-        [x: number]: number;
-    };
-    /**
-     * @param {MouseEvent} e
-     */
-    _mousePressed: (e: MouseEvent) => void;
-    /**
-     * @param {MouseEvent} e
-     */
-    _mouseReleased: (e: MouseEvent) => void;
-    /**
-     * @param {MouseEvent} e
-     */
-    _mouseMoved: (e: MouseEvent) => void;
-    /**
-     * 2本指の操作中かどうか
-     * @type {boolean}
-     */
-    isdoubletouch: boolean;
-    /**
-     * @type {IDPosition}
-     * @private
-     */
-    private _doubleposition_p1;
-    /**
-     * @type {IDPosition}
-     * @private
-     */
-    private _doubleposition_p2;
-    /**
-     * タッチ開始時、すべての座標情報を初期化します。
-     * @param {MouseEvent|TouchEvent} mouseevent - マウスイベント相当のオブジェクト
-     * @private
-     */
-    private _initPosition;
-    /**
-     * マウスイベントのプロパティを仮想的なマウスイベント
-     * @typedef {Object} VirtualMouseEvent
-     * @property {number} clientX マウスのX座標
-     * @property {number} clientY マウスのY座標
-     * @property {number} button マウスボタンの種類
-     * @property {EventTarget} target イベントのターゲット
-     * @property {number} touchcount タッチ数
-     */
-    /**
-     * タッチイベントを仮想的なマウスイベントへ変換します。
-     * 指の平均座標を計算し、タッチ数から対応するボタンを設定します。
-     * @param {TouchEvent} touchevent - タッチイベント
-     * @returns {MouseEvent} 仮想マウスイベントオブジェクト
-     * @private
-     */
-    private _MultiTouchToMouse;
-    /**
-     * 2本指タッチによるピンチ操作を検出し、ホイール回転に変換します。
-     * @param {TouchEvent} touchevent - タッチイベント
-     * @private
-     */
-    private _MoveMultiTouch;
-    /**
-     * 指定されたボタンに応じて関数を呼び分けます。
-     * @param {MouseEvent} mouseevent - 仮想マウスイベント
-     * @param {Function} funcOn - 対象ボタンで呼ぶ関数
-     * @param {Function} funcOff - それ以外のボタンで呼ぶ関数
-     * @param {number} target - 対象となるボタン番号
-     * @private
-     */
-    private _actFuncMask;
-    /**
-     * タッチ開始イベントを処理します。
-     * @param {TouchEvent} touchevent - タッチイベント
-     */
-    touchStart(touchevent: TouchEvent): void;
-    /**
-     * タッチ終了イベントを処理します。
-     * @param {TouchEvent} touchevent - タッチイベント
-     */
-    touchEnd(touchevent: TouchEvent): void;
-    /**
-     * タッチ移動イベントを処理します。
-     * @param {TouchEvent} touchevent - タッチイベント
-     */
-    touchMove(touchevent: TouchEvent): void;
-}
-declare namespace IDTools {
-    function noScroll(): void;
 }

@@ -32,15 +32,15 @@ const createData = function (moduleName, input_name, output_name, format, isUgli
 	return data;
 };
 
-const name = "GuiBlocks";
-const input = "./src/index.js";
+const name = "InputDetect";
+const input = "./src/InputDetect.js";
 const data = [];
 
-data.push(createData(name, input, "./build/umd/index.js", "umd", false));
-data.push(createData(name, input, "./build/umd/index.min.js", "umd", true));
-data.push(createData(name, input, "./build/cjs/index.js", "cjs", false));
-data.push(createData(name, input, "./build/cjs/index.min.js", "cjs", true));
-data.push(createData(name, input, "./build/esm/index.js", "esm", false));
-data.push(createData(name, input, "./build/esm/index.min.js", "esm", true));
+data.push(createData(name, input, "./build/umd/InputDetect.js", "umd", false));
+data.push(createData(name, input, "./build/umd/InputDetect.min.js", "umd", true));
+data.push(createData(name, input, "./build/cjs/InputDetect.js", "cjs", false));
+data.push(createData(name, input, "./build/cjs/InputDetect.min.js", "cjs", true));
+data.push(createData(name, input, "./build/esm/InputDetect.js", "esm", false));
+data.push(createData(name, input, "./build/esm/InputDetect.min.js", "esm", true));
 
 export default data;

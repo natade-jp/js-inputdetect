@@ -2,8 +2,6 @@ import InputDetect from "./libs/InputDetect.min.js";
 import NTColor from "./libs/NTColor.min.js";
 import GuiBlocks from "./libs/GuiBlocks.min.js";
 
-const Device = InputDetect;
-
 /**
  * InputDevice（マウスやタッチ）の利用サンプル
  * 
@@ -16,7 +14,7 @@ const main = function() {
 	console.log("InputDetect サンプル");
 	
 	// 画面の縦スクロールを禁止（スマホなどで操作しやすくする）
-	Device.IDTools.noScroll();
+	InputDetect.noScroll();
 	
 	// GuiBlocks の Canvas コンポーネントを作成してDOMに挿入
 	const scanvas = new GuiBlocks.SCanvas();
@@ -33,7 +31,7 @@ const main = function() {
 	const ctx = scanvas.getContext();
 	
 	// タッチ・マウス入力を取得するデバイスオブジェクト生成
-	const mouse = new Device.IDTouch();
+	const mouse = InputDetect.create();
 
 	// Canvasエレメントにイベントリスナーを登録（タッチ・マウス両対応）
 	mouse.setListenerOnElement(scanvas.element);
@@ -46,8 +44,7 @@ const main = function() {
 	const checkMouse = function() {
 
 		// 最新の入力情報を取得
-		const data = new Device.IDTouch();
-		mouse.pickInput(data);
+		const data = mouse.pickInput();
 
 		// 入力情報をログ出力（座標やボタンの状態、ドラッグ量など）
 		console.log("time[" + (times++) + "]");

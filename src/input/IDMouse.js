@@ -77,6 +77,7 @@ export default class IDMouse {
 	 * マウスボタンが押された時の処理を行います。
 	 * それぞれのボタンごとに対応する状態を更新します。
 	 * @param {MouseEvent} mouseevent - マウスイベントまたは同等のオブジェクト
+	 * @protected
 	 */
 	mousePressed(mouseevent) {
 		this.left.mousePressed(mouseevent);
@@ -87,6 +88,7 @@ export default class IDMouse {
 	/**
 	 * マウスボタンが離された時の処理を行います。
 	 * @param {MouseEvent} mouseevent - マウスイベントまたは同等のオブジェクト
+	 * @protected
 	 */
 	mouseReleased(mouseevent) {
 		this.left.mouseReleased(mouseevent);
@@ -98,6 +100,7 @@ export default class IDMouse {
 	 * マウス移動時の処理を行います。
 	 * それぞれのボタンのドラッグ状態や現在位置を更新します。
 	 * @param {MouseEvent} mouseevent - マウスイベントまたは同等のオブジェクト
+	 * @protected
 	 */
 	mouseMoved(mouseevent) {
 		this.left.mouseMoved(mouseevent);
@@ -110,6 +113,7 @@ export default class IDMouse {
 	/**
 	 * ホイール回転イベントの処理を行います。
 	 * @param {WheelEvent} event - ホイールイベントまたは同等のオブジェクト
+	 * @protected
 	 */
 	mouseWheelMoved(event) {
 		if (event.deltaY !== 0) {
@@ -119,6 +123,7 @@ export default class IDMouse {
 
 	/**
 	 * マウスカーソルが要素外に出た場合の処理（状態リセット等）を行います。
+	 * @protected
 	 */
 	focusLost() {
 		this.left.focusLost();

@@ -33,6 +33,7 @@ export default class IDTouch extends IDMouse {
 		/**
 		 * タッチ数とマウスボタン番号のマッピング
 		 * @type {Object<number, number>}
+		 * @private
 		 */
 		this.touchcount_to_mask = {
 			1: IDMouse.MOUSE_EVENTS.BUTTON1_MASK,
@@ -42,18 +43,21 @@ export default class IDTouch extends IDMouse {
 		const that = this;
 		/**
 		 * @param {MouseEvent} e
+		 * @private
 		 */
 		this._mousePressed = function (e) {
 			that.mousePressed(e);
 		};
 		/**
 		 * @param {MouseEvent} e
+		 * @private
 		 */
 		this._mouseReleased = function (e) {
 			that.mouseReleased(e);
 		};
 		/**
 		 * @param {MouseEvent} e
+		 * @private
 		 */
 		this._mouseMoved = function (e) {
 			that.mouseMoved(e);
@@ -190,8 +194,9 @@ export default class IDTouch extends IDMouse {
 	/**
 	 * タッチ開始イベントを処理します。
 	 * @param {TouchEvent} touchevent - タッチイベント
+	 * @private
 	 */
-	touchStart(touchevent) {
+	_touchStart(touchevent) {
 		const mouseevent = this._MultiTouchToMouse(touchevent);
 		// タッチした時点ですべての座標を初期化する
 		this._initPosition(mouseevent);
@@ -201,8 +206,9 @@ export default class IDTouch extends IDMouse {
 	/**
 	 * タッチ終了イベントを処理します。
 	 * @param {TouchEvent} touchevent - タッチイベント
+	 * @private
 	 */
-	touchEnd(touchevent) {
+	_touchEnd(touchevent) {
 		const mouseevent = this._MultiTouchToMouse(touchevent);
 		this._actFuncMask(mouseevent, this._mouseReleased, this._mouseReleased, mouseevent.button);
 	}
@@ -210,8 +216,9 @@ export default class IDTouch extends IDMouse {
 	/**
 	 * タッチ移動イベントを処理します。
 	 * @param {TouchEvent} touchevent - タッチイベント
+	 * @private
 	 */
-	touchMove(touchevent) {
+	_touchMove(touchevent) {
 		this._MoveMultiTouch(touchevent);
 		const mouseevent = this._MultiTouchToMouse(touchevent);
 		this._actFuncMask(mouseevent, this._mouseMoved, this._mouseMoved, mouseevent.button);
@@ -230,21 +237,21 @@ export default class IDTouch extends IDMouse {
 		 * @param {TouchEvent} touchevent
 		 */
 		const touchStart = function (touchevent) {
-			that.touchStart(touchevent);
+			that._touchStart(touchevent);
 		};
 
 		/**
 		 * @param {TouchEvent} touchevent
 		 */
 		const touchEnd = function (touchevent) {
-			that.touchEnd(touchevent);
+			that._touchEnd(touchevent);
 		};
 
 		/**
 		 * @param {TouchEvent} touchevent
 		 */
 		const touchMove = function (touchevent) {
-			that.touchMove(touchevent);
+			that._touchMove(touchevent);
 			// スクロール禁止
 			touchevent.preventDefault();
 		};

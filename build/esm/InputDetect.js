@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * IDSwitch.js
  *
@@ -511,6 +509,7 @@ class IDMouse {
 	 * マウスボタンが押された時の処理を行います。
 	 * それぞれのボタンごとに対応する状態を更新します。
 	 * @param {MouseEvent} mouseevent - マウスイベントまたは同等のオブジェクト
+	 * @protected
 	 */
 	mousePressed(mouseevent) {
 		this.left.mousePressed(mouseevent);
@@ -521,6 +520,7 @@ class IDMouse {
 	/**
 	 * マウスボタンが離された時の処理を行います。
 	 * @param {MouseEvent} mouseevent - マウスイベントまたは同等のオブジェクト
+	 * @protected
 	 */
 	mouseReleased(mouseevent) {
 		this.left.mouseReleased(mouseevent);
@@ -532,6 +532,7 @@ class IDMouse {
 	 * マウス移動時の処理を行います。
 	 * それぞれのボタンのドラッグ状態や現在位置を更新します。
 	 * @param {MouseEvent} mouseevent - マウスイベントまたは同等のオブジェクト
+	 * @protected
 	 */
 	mouseMoved(mouseevent) {
 		this.left.mouseMoved(mouseevent);
@@ -544,6 +545,7 @@ class IDMouse {
 	/**
 	 * ホイール回転イベントの処理を行います。
 	 * @param {WheelEvent} event - ホイールイベントまたは同等のオブジェクト
+	 * @protected
 	 */
 	mouseWheelMoved(event) {
 		if (event.deltaY !== 0) {
@@ -553,6 +555,7 @@ class IDMouse {
 
 	/**
 	 * マウスカーソルが要素外に出た場合の処理（状態リセット等）を行います。
+	 * @protected
 	 */
 	focusLost() {
 		this.left.focusLost();
@@ -857,8 +860,9 @@ class IDTouch extends IDMouse {
 	/**
 	 * タッチ開始イベントを処理します。
 	 * @param {TouchEvent} touchevent - タッチイベント
+	 * @private
 	 */
-	touchStart(touchevent) {
+	_touchStart(touchevent) {
 		const mouseevent = this._MultiTouchToMouse(touchevent);
 		// タッチした時点ですべての座標を初期化する
 		this._initPosition(mouseevent);
@@ -868,8 +872,9 @@ class IDTouch extends IDMouse {
 	/**
 	 * タッチ終了イベントを処理します。
 	 * @param {TouchEvent} touchevent - タッチイベント
+	 * @private
 	 */
-	touchEnd(touchevent) {
+	_touchEnd(touchevent) {
 		const mouseevent = this._MultiTouchToMouse(touchevent);
 		this._actFuncMask(mouseevent, this._mouseReleased, this._mouseReleased, mouseevent.button);
 	}
@@ -877,8 +882,9 @@ class IDTouch extends IDMouse {
 	/**
 	 * タッチ移動イベントを処理します。
 	 * @param {TouchEvent} touchevent - タッチイベント
+	 * @private
 	 */
-	touchMove(touchevent) {
+	_touchMove(touchevent) {
 		this._MoveMultiTouch(touchevent);
 		const mouseevent = this._MultiTouchToMouse(touchevent);
 		this._actFuncMask(mouseevent, this._mouseMoved, this._mouseMoved, mouseevent.button);
@@ -897,21 +903,21 @@ class IDTouch extends IDMouse {
 		 * @param {TouchEvent} touchevent
 		 */
 		const touchStart = function (touchevent) {
-			that.touchStart(touchevent);
+			that._touchStart(touchevent);
 		};
 
 		/**
 		 * @param {TouchEvent} touchevent
 		 */
 		const touchEnd = function (touchevent) {
-			that.touchEnd(touchevent);
+			that._touchEnd(touchevent);
 		};
 
 		/**
 		 * @param {TouchEvent} touchevent
 		 */
 		const touchMove = function (touchevent) {
-			that.touchMove(touchevent);
+			that._touchMove(touchevent);
 			// スクロール禁止
 			touchevent.preventDefault();
 		};
@@ -970,23 +976,58 @@ const IDTools = {
  */
 
 
-/**
- * デバイス操作APIのエントリーポイント
- * @namespace Device
- * @property {typeof IDDraggableSwitch} IDDraggableSwitch - ドラッグ可能なスイッチ操作クラス
- * @property {typeof IDMouse} IDMouse - マウス操作クラス
- * @property {typeof IDPosition} IDPosition - 座標管理クラス
- * @property {typeof IDSwitch} IDSwitch - スイッチ（ボタン）状態管理クラス
- * @property {typeof IDTouch} IDTouch - タッチ操作クラス
- * @property {typeof IDTools} IDTools - デバイス操作ユーティリティ
- */
-const InputDetect = {
-	IDDraggableSwitch: IDDraggableSwitch,
-	IDMouse: IDMouse,
-	IDPosition: IDPosition,
-	IDSwitch: IDSwitch,
-	IDTouch: IDTouch,
-	IDTools: IDTools
-};
+class InputDetect {
+	/**
+	 * @private
+	 */
+	constructor() {
+		/**
+		 * @type {IDTouch}
+		 * @private
+		 */
+		this._data = new IDTouch();
+	}
 
-module.exports = InputDetect;
+	/**
+	 * InputDetect のインスタンスを生成します。
+	 * @returns {InputDetect}
+	 */
+	static create() {
+		return new InputDetect();
+	}
+
+	/**
+	 * 対象要素にタッチイベントリスナーを設定します。
+	 * @param {HTMLElement} element - イベントを監視するDOM要素
+	 */
+	setListenerOnElement(element) {
+		this._data.setListenerOnElement(element);
+	}
+
+	/**
+	 * 現在の入力情報が入ったIDTouchインスタンスを取得します。
+	 * 各ボタンや位置、ホイール回転量が渡され、渡した後はホイール量がリセットされます。
+	 * @returns {IDTouch} - タッチデータを持つIDTouchインスタンス
+	 */
+	pickInput() {
+		const pick_data = new IDTouch();
+		this._data.pickInput(pick_data);
+		return pick_data;
+	}
+
+	/**
+	 * スクロールを禁止します。
+	 *
+	 * @function
+	 * @returns {void}
+	 *
+	 * @example
+	 * // ページの縦スクロールを禁止したいときに実行
+	 * IDTools.noScroll();
+	 */
+	static noScroll() {
+		IDTools.noScroll();
+	}
+}
+
+export { InputDetect as default };

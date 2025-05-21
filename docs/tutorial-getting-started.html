@@ -57,7 +57,6 @@
 <ol>
 <li>画面内（640x480の黒いキャンバス）でタッチやマウス操作をすると、入力の座標やボタン状態がログ出力され、押された場所に色付き円が描画されます。</li>
 <li>左クリック/タッチ1本、右クリック/タッチ2本、中央クリック/タッチ3本で色が変化します。</li>
-<li>Device.Touch, Device.Mouse を使うことで、同様の方法で様々な入力を取得できます。</li>
 </ol>
 <ul>
 <li><code>index.html</code></li>
@@ -88,13 +87,7 @@
 <ul>
 <li><code>main.mjs</code></li>
 </ul>
-<pre class="prettyprint source lang-js"><code>import InputDetect from &quot;./libs/InputDetect.min.js&quot;;
-import NTColor from &quot;./libs/NTColor.min.js&quot;;
-import GuiBlocks from &quot;./libs/GuiBlocks.min.js&quot;;
-
-const Device = InputDetect;
-
-/**
+<pre class="prettyprint source lang-js"><code>/**
  * InputDevice（マウスやタッチ）の利用サンプル
  * 
  * このスクリプトは、タッチやマウスのイベントを取得して、
@@ -106,7 +99,7 @@ const main = function() {
 	console.log(&quot;InputDetect サンプル&quot;);
 	
 	// 画面の縦スクロールを禁止（スマホなどで操作しやすくする）
-	Device.IDTools.noScroll();
+	InputDetect.noScroll();
 	
 	// GuiBlocks の Canvas コンポーネントを作成してDOMに挿入
 	const scanvas = new GuiBlocks.SCanvas();
@@ -123,7 +116,7 @@ const main = function() {
 	const ctx = scanvas.getContext();
 	
 	// タッチ・マウス入力を取得するデバイスオブジェクト生成
-	const mouse = new Device.IDTouch();
+	const mouse = InputDetect.create();
 
 	// Canvasエレメントにイベントリスナーを登録（タッチ・マウス両対応）
 	mouse.setListenerOnElement(scanvas.element);
@@ -136,8 +129,7 @@ const main = function() {
 	const checkMouse = function() {
 
 		// 最新の入力情報を取得
-		const data = new Device.IDTouch();
-		mouse.pickInput(data);
+		const data = mouse.pickInput();
 
 		// 入力情報をログ出力（座標やボタンの状態、ドラッグ量など）
 		console.log(&quot;time[&quot; + (times++) + &quot;]&quot;);

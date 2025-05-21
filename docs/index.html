@@ -61,18 +61,31 @@
 
     <section class="readme usertext">
         <article><h1>InputDetect</h1>
-<p><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat" alt="MIT License"></p>
+<p><a href="https://badge.fury.io/js/inputdetect"><img src="https://badge.fury.io/js/inputdetect.svg" alt="npm version"></a>
+<a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a></p>
 <h2>概要</h2>
 <p>InputDetect は、マウス・タッチ（マルチタッチ対応）など多様な入力デバイスの操作をシンプルに検知・処理できる JavaScript ライブラリです。
 ドラッグ、ボタン押下、座標検知、ピンチイン・アウト（2本指操作）、ホイール操作など、Webアプリケーションでの複雑な入力処理を統一的に扱うことができます。</p>
-<p>詳しい説明は、<a href="https://natade-jp.github.io/js-inputdetect/">Github Pages</a>で解説しています。</p>
+<p>実際に <a href="https://natade-jp.github.io/js-inputdetect/tutorial-getting-started.html">Github Pages</a> で動作を確認できます。</p>
 <h2>特長</h2>
 <ul>
-<li>マウス・タッチ入力の抽象化</li>
-<li>左・右・中央ボタンやドラッグ操作、ホイール操作に対応</li>
-<li>3本指までのマルチタッチを検知</li>
+<li>マウスとタッチ入力を、同じインターフェースで処理できる</li>
+<li>ドラッグ・ホイール・座標・複数ボタン同時押しなど幅広い入力に対応</li>
 <li>イベントリスナーを簡単に設定可能</li>
-</ul></article>
+</ul>
+<h2>使い方</h2>
+<pre class="prettyprint source lang-js"><code>import InputDetect from &quot;InputDetect&quot;;
+const mouse = InputDetect.create();   // タッチ&マウス両対応
+mouse.setListenerOnElement(canvasElement); // イベント登録
+
+// 定期的に状態取得
+const data = mouse.pickInput();
+
+// ボタン状態・座標取得例
+console.log(data.left.switch.ispressed); // 左クリック or タッチ1本
+console.log(data.position.x, data.position.y); // 座標
+console.log(data.wheelrotation);         // ホイール回転量
+</code></pre></article>
     </section>
 
 

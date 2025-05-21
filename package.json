@@ -1,6 +1,6 @@
 {
 	"name": "inputdetect",
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"description": "A JavaScript library for unified mouse and touch input detection, supporting drag, multi-touch, and switch-like button interactions. Provides consistent event handling for web applications.",
 	"keywords": [
 		"input",
